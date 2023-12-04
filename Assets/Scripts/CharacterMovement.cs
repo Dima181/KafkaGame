@@ -4,41 +4,37 @@ using UnityEngine;
 
 public class CharacterMovement : MonoBehaviour
 {
-    [SerializeField] private float playerSpeed = 0;
-    [SerializeField] private float jumpForce = 0;
-    [SerializeField] private LayerMask ground = 0;
-    [SerializeField] private Transform footPosition = null;
-    [SerializeField] private bool isJump = false;
+    [SerializeField] private float playerSpeed = 5f;
+    [SerializeField] private float jumpForce = 5;
+    [SerializeField] private LayerMask groundLayer = 0;
+    [SerializeField] private Transform footPosition;
+    [SerializeField] private bool canJump = false;
+    private bool isGrounded;
+
+    private Rigidbody2D rb;
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
 
     private void Update()
     {
-        if(Physics2D.OverlapCircle(footPosition.position, 0.2f, ground))
-            isJump = true;
+        // Проверяем, находится ли персонаж на земле
+        isGrounded = Physics2D.OverlapCircle(footPosition.position, 0.2f, groundLayer);
 
-        if (Input.GetKeyDown(KeyCode.Space)) 
-            Jump();
+        // Прыжок
+        if (isGrounded && Input.GetKeyDown(KeyCode.Space) && canJump)
+        {
+            rb.AddForce(new Vector2(0f, jumpForce));
+        }
     }
 
     private void FixedUpdate()
     {
-        
+        // Горизонтальное движение
         float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-
-        
-        Vector3 movement = new Vector2(horizontalInput, verticalInput) * playerSpeed * Time.deltaTime;
-
-        
-        transform.Translate(movement);
-    }
-
-    private void Jump()
-    {
-        if (isJump)
-        {
-            GetComponent<Rigidbody2D>().velocity = new Vector2(0f, jumpForce);
-            isJump = false;
-        }
-
+        Vector2 movement = new Vector2(horizontalInput * playerSpeed, rb.velocity.y);
+        rb.velocity = movement;
     }
 }
